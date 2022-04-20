@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>TJRLib  JS http request library demo</title>
+	<link rel="stylesheet" href="">
+
+    <script src="dst/TJRLib.min.js"></script>
+</head>
+<body>
+
+<h1>TJRLib  JS http request library demo </h1>
+<div>div test</div>
+
+<script>
+data=[];
+//注意 auth_url为完整的借口访问地址 POST方式
+data["auth_url"]="http://rap2api.taobao.org/app/mock/300755/user/login"; 
+data["auth_json_params"]={ //这里根据你的后端的登录逻辑传递参数
+        auth: "tekin",
+        pwd: "888888"
+    }; 
+// 系统默认内置用户为 {username:"admin",password:"admin888"}
+// 返回参数必须是 
+
+//api请求基础地址  最终形式 {base_url}/{api地址}
+data["base_url"]="http://rap2api.taobao.org/app/mock/300755";
+
+// token强制刷新时间 不配置 默认 1天, 可以自行设置 单位 天 只支持整数
+data["force_refresh_days"]=2; 
+// TJRLib.initialize(data);
+
+// 自定义的回调函数
+// data["get_random_password"]=getRandomPassword;
+// data["translate"]=translateFun;
+
+//自定义的全局变量
+data["g_local_key"]="aaakkkkkkkkkkkkk";
+
+// 初始化请求用到的参数 注意 auth_url和base_url必须提供,其他可选
+TJRLib.initialize(data);
+
+
+
+
+
+var ss=TJRLib.extendCallback(ss, function() {
+    console.log("ss'");
+})
+let b1 = TJRLib.base64Encode("aaaaaadsfdasfdsafs");
+console.log(b1);
+console.log(TJRLib.base64Decode(b1));
+
+//调用
+var kk = TJRLib.ext.getLocalKey();
+console.log(kk);
+
+TJRLib.ext.setLocalKey("9999999999999");
+var kk2 = TJRLib.ext.getLocalKey();
+console.log(kk2);
+
+// TJRLib.ext.translate("aaaaaaaa");
+
+//TJRLib.ext.makeRandomPassword();
+
+// var rpwd = TJRLib.ext.makeRandomPassword();
+// console.log("随机密码: %s",rpwd);
+
+var nn= TJRLib.getNodes(this.document,"div");
+
+console.log(TJRLib.getNodeText(this.document,"div"));
+
+
+TJRLib.tapi.jsonRequest({
+    type: "POST",
+    url: "/TJRLib/demoPost",
+    data: {
+        km: "tapi"
+    },
+    success: function(e) {
+       //
+    },
+    error: function(e) {
+       console.log(e)
+    }
+});
+
+
+TJRLib.tapi.jsonRequest({
+    type: "POST",
+    url: "/api/company/isExpired",
+    data: {
+        km: "tapi"
+    },
+    success: function(e) {
+       //
+    },
+    error: function(e) {
+       console.log(e)
+    }
+});
+
+TJRLib.tapi.jsonRequest({
+    type: "GET",
+    url: "/api/company/showLicensing",
+    success: function(e) {
+       //
+    },
+    error: function(e) {
+       console.log(e)
+    }
+});
+
+// // 不加头信息
+TJRLib.ajax({
+    url: "http://localhost:8089/api/monitor/job?pageNum=1&pageSize=10",
+    type: "POST",
+    data: {a:"aaaa"},
+    success: function(resp) {
+       console.log(resp)
+    },
+    error: function(e) {
+      console.log("请求失败: %s  code: %d",e.statusText,e.status); //输出错误消息
+    }
+});
+
+TJRLib.identities = function() {
+    var i = function(e, i) {
+        var t = {
+            iid: e.iid,
+            iname: e.iname,
+            edit: "1",
+            aids: "2",
+            ffids: "2",
+            appaids: "2",
+        };
+        e.pw_prompt && (t.pwprotect = "on"),
+        TJRLib.xmlRequest({
+            url: "http://rap2api.taobao.org/app/mock/300755/TJRLib/demoGet",
+            data: t,
+            success: i,
+            userSupplied: e
+        });
+    };
+    return {
+        add: function(e) {
+            i(e, "identadded");
+        },
+        remove: function(e) {
+            TJRLib.jsonRequest({
+                type: "get",
+                url: "/TJRLib/demoGet",
+                data: {
+                    src: "website",
+                    deleteext: 1,
+                    iid: e.id
+                },
+                success: "identdeleted",
+                userSupplied: e
+            });
+        },
+        update: function(e) {
+            i(e, "identupdated");
+        }
+    };
+}();
+var params = {}
+params.id="aa";
+params.iid="aaa";
+params.iname="aasa";
+
+TJRLib.identities.add(params)
+TJRLib.identities.remove(params)
+TJRLib.identities.update(params)
+
+//回调函数
+function identdeleted(t){
+    console.log(t)
+}
+
+function userHasAccount(t) {
+    t && TJRLib.tapi.jsonRequest({
+        url: "/api/user/hasAccount",
+        type: "GET",
+        CSRFToken: !1,
+        success: function(e) {
+            t("1" === e.hasAccount);
+        },
+        callbacks: [ function() {
+            t(!1);
+        } ]
+    });
+}
+
+function getCompanyLicensing(e) {
+    TJRLib.tapi.jsonRequest({
+        type: "GET",
+        url: "/api/company/showLicensing",
+        success: e,
+        callbacks: {
+            TrialExpired: e,
+            Expired: e,
+            RecentlyExpired: e
+        }
+    });
+}
+
+function isCompanyExpired(e) {
+    TJRLib.tapi.jsonRequest({
+        type: "GET",
+        url: "/api/company/isExpired",
+        success: e
+    });
+}
+
+function translateFun(){
+    console.log("=====translateFun=====")
+}
+function getRandomPassword(e){
+    console.log("-----getRandomPassword-----")
+    console.log(e)
+     console.log("-----getRandomPassword-----")
+     return e;
+}
+
+</script>
+</body>
+</html>
