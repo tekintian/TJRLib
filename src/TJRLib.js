@@ -36,7 +36,7 @@ TJRLib.tapi.jsonRequest({
  * @author Tekintian@gmail.com
  * @link https://github.com/tekintian
  */
-TJRLib = function() {
+exports.TJRLib = function() {
     // 存储
     const ss = {};
     ss.get = function(name) {
@@ -562,4 +562,4 @@ TJRLib = function() {
         },
         tapi: jsonReq
     };
-}();
+};
